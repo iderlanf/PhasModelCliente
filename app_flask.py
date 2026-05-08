@@ -1,7 +1,7 @@
 import os
-from werkzeug.utils import secure_filename
-from flask import Flask, render_template, request, redirect, url_for
 import requests
+from flask import Flask, render_template, request, redirect, url_for
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -28,7 +28,6 @@ def index():
     filtros = {}
     if tipo and valor:
         filtros[tipo] = valor
-    
     try:
         response = requests.get(f"{API_BASE_URL}/modelos", params=filtros)
         modelos = response.json() if response.status_code == 200 else []
@@ -40,10 +39,8 @@ def index():
 @app.route('/modelo/<int:id>')
 def detalhes(id):
     try:
-        # Busca detalhes da modelo e também seus trabalhos realizados
         response = requests.get(f"{API_BASE_URL}/modelo/{id}")
         trabalhos_resp = requests.get(f"{API_BASE_URL}/modelo/{id}/trabalhos")
-        
         if response.status_code == 200:
             modelo = response.json()
             trabalhos = trabalhos_resp.json() if trabalhos_resp.status_code == 200 else []
@@ -85,6 +82,24 @@ def editar(id):
             return render_template('editar.html', modelo=response.json())
         return "Erro ao carregar", 404
 
+    # Lógica de Upload e Limpeza de Foto Antiga
+    file = request.files.get('foto_arquivo')
+    foto_atual = request.form.get("foto_url") 
+    filename = foto_atual 
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        # Deleta a foto antiga se não for a padrão e se for um arquivo diferente
+        if foto_atual and foto_atual != "default.png" and foto_atual != filename:
+            caminho_antigo = os.path.join(app.config['UPLOAD_FOLDER'], foto_atual)
+            if os.path.exists(caminho_antigo):
+                try:
+                    os.remove(caminho_antigo)
+                except Exception as e:
+                    print(f"Erro ao deletar foto antiga: {e}")
+
     dados = {
         "nome": request.form.get("nome"),
         "idade": int(request.form.get("idade")),
@@ -97,17 +112,27 @@ def editar(id):
         "cintura": float(request.form.get("cintura")),
         "quadril": float(request.form.get("quadril")),
         "evento_participado": request.form.get("evento_participado"),
-        "foto_url": request.form.get("foto_url")
+        "foto_url": filename
     }
     requests.put(f"{API_BASE_URL}/modelos/{id}", json=dados)
     return redirect(url_for('index'))
 
 @app.route('/excluir/<int:id>')
 def excluir(id):
+    try:
+        resp = requests.get(f"{API_BASE_URL}/modelo/{id}")
+        if resp.status_code == 200:
+            foto = resp.json().get("foto_url")
+            if foto and foto != "default.png":
+                caminho = os.path.join(app.config['UPLOAD_FOLDER'], foto)
+                if os.path.exists(caminho):
+                    os.remove(caminho)
+    except:
+        pass
     requests.delete(f"{API_BASE_URL}/modelos/{id}")
     return redirect(url_for('index'))
 
-# --- NOVAS ROTAS: CLIENTES ---
+# --- ROTAS DE CLIENTES ---
 
 @app.route('/clientes')
 def listar_clientes_view():
@@ -130,7 +155,34 @@ def adicionar_cliente():
     requests.post(f"{API_BASE_URL}/clientes", json=dados)
     return redirect(url_for('listar_clientes_view'))
 
-# --- NOVAS ROTAS: TRABALHOS (CONTRATOS) ---
+@app.route('/clientes/editar/<int:id>', methods=['GET', 'POST'])
+def editar_cliente(id):
+    if request.method == 'GET':
+        # Buscamos todos os clientes e filtramos o correto
+        resp = requests.get(f"{API_BASE_URL}/clientes")
+        clientes = resp.json()
+        cliente = next((c for c in clientes if c['id'] == id), None)
+        if cliente:
+            return render_template('editar_cliente.html', cliente=cliente)
+        return "Cliente não encontrado", 404
+
+    dados = {
+        "nome": request.form.get("nome"),
+        "telefone": request.form.get("telefone"),
+        "email": request.form.get("email"),
+        "cidade": request.form.get("cidade"),
+        "estado": request.form.get("estado"),
+        "pais": request.form.get("pais")
+    }
+    requests.put(f"{API_BASE_URL}/clientes/{id}", json=dados)
+    return redirect(url_for('listar_clientes_view'))
+
+@app.route('/clientes/excluir/<int:id>')
+def excluir_cliente_view(id):
+    requests.delete(f"{API_BASE_URL}/clientes/{id}")
+    return redirect(url_for('listar_clientes_view'))
+
+# --- ROTAS DE TRABALHOS ---
 
 @app.route('/trabalhos')
 def listar_trabalhos_view():
@@ -140,11 +192,7 @@ def listar_trabalhos_view():
         clientes = requests.get(f"{API_BASE_URL}/clientes").json()
     except:
         trabalhos, modelos, clientes = [], [], []
-    
-    return render_template('trabalhos.html', 
-                           trabalhos=trabalhos, 
-                           modelos=modelos, 
-                           clientes=clientes)
+    return render_template('trabalhos.html', trabalhos=trabalhos, modelos=modelos, clientes=clientes)
 
 @app.route('/trabalhos/adicionar', methods=['POST'])
 def adicionar_trabalho():
@@ -163,3 +211,4 @@ def adicionar_trabalho():
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
+

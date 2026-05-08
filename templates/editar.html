@@ -12,68 +12,85 @@
         input, textarea { padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; box-sizing: border-box; }
         button { background-color: #2196F3; color: white; border: none; padding: 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 20px; }
         button:hover { background-color: #0b7dda; }
+        
+        /* Estilo para mostrar a foto atual antes de trocar */
+        .foto-container { text-align: center; margin-bottom: 15px; }
+        .foto-container img { 
+            width: 120px; 
+            height: 120px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            border: 3px solid #2196F3;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <a href="/" class="voltar">← Cancelar e Voltar</a>
-    <h1>Editar Perfil</h1>
-    <p>Editando dados de: <strong>{{ modelo.nome }}</strong> (ID #{{ modelo.id }})</p>
-
-    <form action="/editar/{{ modelo.id }}" method="POST">
-        <label>Nome:</label>
-        <input type="text" name="nome" value="{{ modelo.nome }}" required>
-
-        <div style="display: flex; gap: 10px;">
-            <div style="flex: 1;">
-                <label>Idade:</label>
-                <input type="number" name="idade" value="{{ modelo.idade }}" required>
-            </div>
-            <div style="flex: 1;">
-                <label>Peso (kg):</label>
-                <input type="number" name="peso" value="{{ modelo.peso }}" required>
-            </div>
-            <div style="flex: 1;">
-                <label>Altura (m):</label>
-                <input type="number" step="0.01" name="altura" value="{{ modelo.altura }}" required>
-            </div>
+    <div class="container">
+        <a href="/" class="voltar">← Cancelar e Voltar</a>
+        <h1>Editar Perfil</h1>
+        
+        <div class="foto-container">
+            <img src="{{ url_for('static', filename='uploads/' + modelo.foto_url) }}" alt="Foto de {{ modelo.nome }}">
+            <p style="font-size: 12px; color: #666;">Foto atual de: <strong>{{ modelo.nome }}</strong></p>
         </div>
 
-        <!-- Novos campos de Características Físicas -->
-        <label>Cor do Cabelo:</label>
-        <input type="text" name="cabelo" value="{{ modelo.cabelo }}" required>
+        <!-- IMPORTANTE: Adicionado o enctype para envio da foto -->
+        <form action="/editar/{{ modelo.id }}" method="POST" enctype="multipart/form-data">
+            
+            <label>Alterar Foto de Perfil:</label>
+            <input type="file" name="foto_arquivo" accept="image/*">
+            
+            <label>Nome:</label>
+            <input type="text" name="nome" value="{{ modelo.nome }}" required>
 
-        <label>Tom de Pele / Etnia:</label>
-        <input type="text" name="pele" value="{{ modelo.pele }}" required>
-
-        <label>Cor dos Olhos:</label>
-        <input type="text" name="olhos" value="{{ modelo.olhos }}" required>
-
-        <div style="display: flex; gap: 10px;">
-            <div style="flex: 1;">
-                <label>Busto:</label>
-                <input type="number" step="0.1" name="busto" value="{{ modelo.busto }}" required>
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>Idade:</label>
+                    <input type="number" name="idade" value="{{ modelo.idade }}" required>
+                </div>
+                <div style="flex: 1;">
+                    <label>Peso (kg):</label>
+                    <input type="number" name="peso" value="{{ modelo.peso }}" required>
+                </div>
+                <div style="flex: 1;">
+                    <label>Altura (m):</label>
+                    <input type="number" step="0.01" name="altura" value="{{ modelo.altura }}" required>
+                </div>
             </div>
-            <div style="flex: 1;">
-                <label>Cintura:</label>
-                <input type="number" step="0.1" name="cintura" value="{{ modelo.cintura }}" required>
+
+            <label>Cor do Cabelo:</label>
+            <input type="text" name="cabelo" value="{{ modelo.cabelo }}" required>
+
+            <label>Tom de Pele / Etnia:</label>
+            <input type="text" name="pele" value="{{ modelo.pele }}" required>
+
+            <label>Cor dos Olhos:</label>
+            <input type="text" name="olhos" value="{{ modelo.olhos }}" required>
+
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>Busto:</label>
+                    <input type="number" step="0.1" name="busto" value="{{ modelo.busto }}" required>
+                </div>
+                <div style="flex: 1;">
+                    <label>Cintura:</label>
+                    <input type="number" step="0.1" name="cintura" value="{{ modelo.cintura }}" required>
+                </div>
+                <div style="flex: 1;">
+                    <label>Quadril:</label>
+                    <input type="number" step="0.1" name="quadril" value="{{ modelo.quadril }}" required>
+                </div>
             </div>
-            <div style="flex: 1;">
-                <label>Quadril:</label>
-                <input type="number" step="0.1" name="quadril" value="{{ modelo.quadril }}" required>
-            </div>
-        </div>
 
-        <label>Eventos que já participou:</label>
-        <textarea name="evento_participado" rows="4">{{ modelo.evento_participado }}</textarea>
+            <label>Eventos que já participou:</label>
+            <textarea name="evento_participado" rows="4">{{ modelo.evento_participado }}</textarea>
 
-        <!-- Mantém a foto atual -->
-        <input type="hidden" name="foto_url" value="{{ modelo.foto_url }}">
+            <!-- Mantém o nome da foto atual se o usuário não selecionar uma nova -->
+            <input type="hidden" name="foto_url" value="{{ modelo.foto_url }}">
 
-        <button type="submit">Salvar Alterações</button>
-    </form>
-</div>
-
+            <button type="submit">Salvar Alterações</button>
+        </form>
+    </div>
 </body>
 </html>

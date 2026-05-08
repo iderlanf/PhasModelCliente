@@ -18,7 +18,6 @@ def get_db_connection():
     return mysql.connector.connect(**db_config)
 
 # --- SCHEMAS (MODELOS) ---
-
 class ModeloSchema(BaseModel):
     nome: str
     idade: int
@@ -30,18 +29,18 @@ class ModeloSchema(BaseModel):
     busto: float
     cintura: float
     quadril: float
-    evento_participado: str
+    evento_participado: Optional[str] = ""
     foto_url: Optional[str] = "default.png"
 
 class ModeloDB(ModeloSchema):
     id: int
+
     @field_validator('altura', 'busto', 'cintura', 'quadril', mode='before')
     @classmethod
     def convert_decimal(cls, v: Any) -> float:
         return float(v) if v is not None else 0.0
 
 # --- SCHEMAS (CLIENTES) ---
-
 class ClienteSchema(BaseModel):
     nome: str
     telefone: Optional[str]
@@ -54,7 +53,6 @@ class ClienteDB(ClienteSchema):
     id: int
 
 # --- SCHEMAS (TRABALHOS) ---
-
 class TrabalhoSchema(BaseModel):
     modelo_id: int
     cliente_id: int
@@ -71,10 +69,19 @@ class TrabalhoDB(TrabalhoSchema):
 # --- ROTAS DE MODELOS ---
 
 @app.get("/modelos", response_model=List[ModeloDB])
-def listar_modelos():
+def listar_modelos(nome: Optional[str] = None, cabelo: Optional[str] = None, pele: Optional[str] = None):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM modelos")
+    query = "SELECT * FROM modelos WHERE 1=1"
+    params = []
+    if nome:
+        query += " AND nome LIKE %s"
+        params.append(f"%{nome}%")
+    if cabelo:
+        query += " AND cabelo = %s"
+        params.append(cabelo)
+    
+    cursor.execute(query, params)
     resultados = cursor.fetchall()
     conn.close()
     return resultados
@@ -85,7 +92,8 @@ def criar_modelo(modelo: ModeloSchema):
     cursor = conn.cursor()
     query = """INSERT INTO modelos (nome, idade, peso, altura, cabelo, pele, olhos, busto, cintura, quadril, evento_participado, foto_url) 
                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-    values = (modelo.nome, modelo.idade, modelo.peso, modelo.altura, modelo.cabelo, modelo.pele, modelo.olhos, modelo.busto, modelo.cintura, modelo.quadril, modelo.evento_participado, modelo.foto_url)
+    values = (modelo.nome, modelo.idade, modelo.peso, modelo.altura, modelo.cabelo, modelo.pele, modelo.olhos, 
+              modelo.busto, modelo.cintura, modelo.quadril, modelo.evento_participado, modelo.foto_url)
     cursor.execute(query, values)
     conn.commit()
     conn.close()
@@ -101,6 +109,28 @@ def buscar_modelo(id: int):
     if not item:
         raise HTTPException(status_code=404, detail="Modelo não encontrada")
     return item
+
+@app.put("/modelos/{id}")
+def atualizar_modelo(id: int, modelo: ModeloSchema):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = """UPDATE modelos SET nome=%s, idade=%s, peso=%s, altura=%s, cabelo=%s, pele=%s, olhos=%s, 
+               busto=%s, cintura=%s, quadril=%s, evento_participado=%s, foto_url=%s WHERE id=%s"""
+    values = (modelo.nome, modelo.idade, modelo.peso, modelo.altura, modelo.cabelo, modelo.pele, modelo.olhos, 
+              modelo.busto, modelo.cintura, modelo.quadril, modelo.evento_participado, modelo.foto_url, id)
+    cursor.execute(query, values)
+    conn.commit()
+    conn.close()
+    return {"message": "Dados atualizados com sucesso"}
+
+@app.delete("/modelos/{id}")
+def excluir_modelo(id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM modelos WHERE id = %s", (id,))
+    conn.commit()
+    conn.close()
+    return {"message": "Modelo excluída"}
 
 # --- ROTAS DE CLIENTES ---
 
@@ -123,7 +153,29 @@ def criar_cliente(cliente: ClienteSchema):
     conn.close()
     return {"message": "Cliente cadastrado com sucesso"}
 
-# --- ROTAS DE TRABALHOS (CONTRATOS) ---
+@app.put("/clientes/{id}")
+def atualizar_cliente(id: int, cliente: ClienteSchema):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = """UPDATE clientes SET nome=%s, telefone=%s, email=%s, 
+               cidade=%s, estado=%s, pais=%s WHERE id=%s"""
+    values = (cliente.nome, cliente.telefone, cliente.email, 
+              cliente.cidade, cliente.estado, cliente.pais, id)
+    cursor.execute(query, values)
+    conn.commit()
+    conn.close()
+    return {"message": "Cliente atualizado"}
+
+@app.delete("/clientes/{id}")
+def excluir_cliente(id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM clientes WHERE id = %s", (id,))
+    conn.commit()
+    conn.close()
+    return {"message": "Cliente removido"}
+
+# --- ROTAS DE TRABALHOS ---
 
 @app.get("/trabalhos", response_model=List[TrabalhoDB])
 def listar_trabalhos():
@@ -140,23 +192,19 @@ def criar_trabalho(trabalho: TrabalhoSchema):
     cursor = conn.cursor()
     query = """INSERT INTO trabalhos (modelo_id, cliente_id, data_inicio, data_fim, cidade_trabalho, estado_trabalho, pais_trabalho, valor_trabalho) 
                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
-    values = (trabalho.modelo_id, trabalho.cliente_id, trabalho.data_inicio, trabalho.data_fim, trabalho.cidade_trabalho, trabalho.estado_trabalho, trabalho.pais_trabalho, trabalho.valor_trabalho)
+    values = (trabalho.modelo_id, trabalho.cliente_id, trabalho.data_inicio, trabalho.data_fim, 
+              trabalho.cidade_trabalho, trabalho.estado_trabalho, trabalho.pais_trabalho, trabalho.valor_trabalho)
     cursor.execute(query, values)
     conn.commit()
     conn.close()
     return {"message": "Trabalho registrado com sucesso"}
 
-# Rota para ver trabalhos de uma modelo específica
 @app.get("/modelo/{id}/trabalhos")
 def ver_trabalhos_modelo(id: int):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    query = """
-        SELECT t.*, c.nome as nome_cliente 
-        FROM trabalhos t 
-        JOIN clientes c ON t.cliente_id = c.id 
-        WHERE t.modelo_id = %s
-    """
+    query = """SELECT t.*, c.nome as nome_cliente FROM trabalhos t 
+               JOIN clientes c ON t.cliente_id = c.id WHERE t.modelo_id = %s"""
     cursor.execute(query, (id,))
     resultados = cursor.fetchall()
     conn.close()

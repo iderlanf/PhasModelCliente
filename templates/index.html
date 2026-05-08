@@ -53,7 +53,7 @@
         
         .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
         .full-width { grid-column: span 2; }
-        a.action-link { text-decoration: none; font-weight: bold; }
+        a.action-link { text-decoration: none; font-weight: normal; font-size: 13px; font-family: 'Segoe UI', Arial, sans-serif; }
     </style>
 </head>
 <body>
@@ -120,7 +120,8 @@
                     <td>{{ m.cintura|int }}cm</td>
                     <td>{{ m.quadril|int }}cm</td>
                     <td>
-                        <a href="{{ url_for('editar', id=m.id) }}" style="color: #007bff;" class="action-link">Editar</a> | 
+                        <a href="{{ url_for('editar', id=m.id) }}" style="color: #007bff;" class="action-link">Editar</a>
+                        <span style="color: #eee;"> | </span>
                         <a href="{{ url_for('excluir', id=m.id) }}" onclick="return confirm('Deseja excluir esta modelo?')" style="color: #dc3545;" class="action-link">Excluir</a>
                     </td>
                 </tr>

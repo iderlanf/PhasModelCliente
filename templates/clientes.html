@@ -13,6 +13,7 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
         th { background: #34495e; color: white; }
+        .action-link { text-decoration: none; font-weight: normal; font-size: 13px; font-family: Arial, sans-serif; }
     </style>
 </head>
 <body>
@@ -46,7 +47,13 @@
                     <td><strong>{{ c.nome }}</strong></td>
                     <td>{{ c.cidade }}/{{ c.estado }}</td>
                     <td>{{ c.email }}<br>{{ c.telefone }}</td>
+                    <td>
+                        <a href="/clientes/editar/{{ c.id }}" style="color: #2196F3;" class="action-link">Editar</a>
+                        <span style="color: #ddd;"> | </span>
+                        <a href="/clientes/excluir/{{ c.id }}" onclick="return confirm('Excluir este cliente?')" style="color: #f44336;" class="action-link">Excluir</a>
+                    </td>
                 </tr>
+
                 {% endfor %}
             </tbody>
         </table>
