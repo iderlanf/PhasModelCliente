@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Clientes - Phas Models</title>
+    <!-- Importação de fontes elegantes: Playfair para títulos e Poppins para corpo -->
+    <link href="https://googleapis.com" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            /* Troque a linha do background por esta: */
+            background: url("{{ url_for('static', filename='fundo-phas.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* Espaço para a Logomarca no Topo */
+        .header-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header-logo img {
+            max-width: 280px;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.96); /* Branco translúcido para ler melhor */
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border-top: 6px solid #D63384; /* Linha de destaque no Pink vibrante */
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            color: #4A3B3B;
+            border-bottom: 2px solid #B76E79; /* Linha em Rose Gold */
+            padding-bottom: 10px;
+            margin-top: 30px;
+            font-size: 24px;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: #D63384;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-block;
+            margin-bottom: 20px;
+            transition: 0.3s ease;
+        }
+        .back-link:hover {
+            color: #B76E79;
+            transform: translateX(-5px);
+        }
+
+        /* Formulário de Cadastro */
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            background: #fdf2f7; /* Rosa pálido de fundo */
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #f2d5e5;
+            margin-top: 10px;
+        }
+
+        input {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus {
+            border-color: #D63384;
+            box-shadow: 0 0 8px rgba(214, 51, 132, 0.15);
+        }
+
+        button {
+            grid-column: span 2;
+            padding: 15px;
+            background: linear-gradient(45deg, #D63384, #B76E79);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: 0.4s;
+            margin-top: 10px;
+        }
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(214, 51, 132, 0.3);
+        }
+
+        /* Tabela de Clientes */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            background: white;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        th {
+            background: #4A3B3B;
+            color: white;
+            font-family: 'Playfair Display', serif;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
+            padding: 15px;
+            text-align: left;
+        }
+
+        td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background-color: #fafafa;
+        }
+
+        .action-link {
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+        .action-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 600px) {
+            form { grid-template-columns: 1fr; }
+            button { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-logo">
+        <img src="{{ url_for('static', filename='logo-phas.png') }}" alt="Phas Model Logotipo">
+    </div>
+
+    <div class="container">
+        <a href="/" class="back-link">← Voltar ao Painel Principal</a>
+        
+        <h2>Cadastrar Novo Cliente</h2>
+        <form action="/clientes/adicionar" method="POST">
+            <input type="text" name="nome" placeholder="Nome da Empresa/Cliente" required>
+            <input type="text" name="telefone" placeholder="Telefone">
+            <input type="email" name="email" placeholder="E-mail">
+            <input type="text" name="cidade" placeholder="Cidade">
+            <input type="text" name="estado" placeholder="Estado">
+            <input type="text" name="pais" placeholder="País" value="Brasil">
+            <button type="submit">Salvar Cliente na Base</button>
+        </form>
+
+        <h2>Clientes Ativos</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Localização</th>
+                    <th>Contato</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in clientes %}
+                <tr>
+                    <td>#{{ c.id }}</td>
+                    <td><strong>{{ c.nome }}</strong></td>
+                    <td>{{ c.cidade }}/{{ c.estado }}</td>
+                    <td>{{ c.email }}<br><small style="color: #888;">{{ c.telefone }}</small></td>
+                    <td>
+                        <a href="/clientes/editar/{{ c.id }}" style="color: #B76E79;" class="action-link">Editar</a>
+                        <span style="color: #eee;"> | </span>
+                        <a href="/clientes/excluir/{{ c.id }}" onclick="return confirm('Excluir este cliente?')" style="color: #D63384;" class="action-link">Excluir</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

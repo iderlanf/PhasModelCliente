@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contratos de Trabalhos - Phas Models</title>
+    <!-- Fontes de Luxo -->
+    <link href="https://googleapis.com" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: url("{{ url_for('static', filename='fundo-phas.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* Logomarca no Topo */
+        .header-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header-logo img {
+            max-width: 200px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.96);
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border-top: 6px solid #D63384;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            color: #4A3B3B;
+            border-bottom: 2px solid #B76E79;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .voltar {
+            display: inline-block;
+            margin-bottom: 25px;
+            text-decoration: none;
+            color: #D63384;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+        .voltar:hover { transform: translateX(-5px); color: #4A3B3B; }
+
+        /* Formulário de Registro de Trabalho */
+        .form-job {
+            background: #fdf2f7;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #f2d5e5;
+            margin-bottom: 40px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .form-job label {
+            font-weight: 600;
+            font-size: 11px;
+            color: #B76E79;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        select:focus, input:focus {
+            border-color: #D63384;
+            box-shadow: 0 0 8px rgba(214, 51, 132, 0.1);
+        }
+
+        button {
+            background: linear-gradient(45deg, #D63384, #B76E79);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            grid-column: span 3;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.4s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(214, 51, 132, 0.3);
+        }
+
+        /* Tabela de Contratos */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #4A3B3B;
+            color: white;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        tr:hover { background-color: #fff9fb; }
+
+        .contract-id {
+            background: #f0f0f0;
+            color: #666;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+        }
+
+        .valor-destaque {
+            color: #D63384;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .form-job { grid-template-columns: 1fr; }
+            button { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-logo">
+        <img src="{{ url_for('static', filename='logo-phas.png') }}" alt="Phas Model Logo">
+    </div>
+
+    <div class="container">
+        <a href="/" class="voltar">← Painel de Controle</a>
+        
+        <h2>Registrar Novo Contrato</h2>
+        <form action="/trabalhos/adicionar" method="POST" class="form-job">
+            <div>
+                <label>Selecionar Modelo:</label>
+                <select name="modelo_id" required>
+                    <option value="" disabled selected>Escolha...</option>
+                    {% for m in modelos %}
+                    <option value="{{ m.id }}">{{ m.nome }} (ID: {{ m.id }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Contratante (Cliente):</label>
+                <select name="cliente_id" required>
+                    <option value="" disabled selected>Escolha...</option>
+                    {% for c in clientes %}
+                    <option value="{{ c.id }}">{{ c.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Cachê / Valor (R$):</label>
+                <input type="number" step="0.01" name="valor_trabalho" placeholder="0.00" required>
+            </div>
+            <div>
+                <label>Data de Início:</label>
+                <input type="date" name="data_inicio" required>
+            </div>
+            <div>
+                <label>Data de Término:</label>
+                <input type="date" name="data_fim">
+            </div>
+            <div>
+                <label>Localização (Cidade):</label>
+                <input type="text" name="cidade_trabalho" placeholder="Ex: São Paulo" required>
+            </div>
+            <button type="submit">Firmar Contrato Profissional</button>
+        </form>
+
+        <h2>Histórico de Bookings</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Ref.</th>
+                    <th>Modelo</th>
+                    <th>Cliente</th>
+                    <th>Local</th>
+                    <th>Data Início</th>
+                    <th>Valor Bruto</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in trabalhos %}
+                <tr>
+                    <td><span class="contract-id">#{{ t.id_contrato }}</span></td>
+                    <td><span style="font-weight: 600;">ID #{{ t.modelo_id }}</span></td>
+                    <td>ID #{{ t.cliente_id }}</td>
+                    <td>{{ t.cidade_trabalho }}</td>
+                    <td>{{ t.data_inicio }}</td>
+                    <td><span class="valor-destaque">R$ {{ "%.2f"|format(t.valor_trabalho) }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

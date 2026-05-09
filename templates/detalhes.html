@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil: {{ modelo.nome }} - Phas Models</title>
+    <!-- Fontes de Luxo -->
+    <link href="https://googleapis.com" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: url("{{ url_for('static', filename='fundo-phas.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* Logomarca no Topo */
+        .header-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header-logo img {
+            max-width: 220px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+
+        .perfil {
+            max-width: 700px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.97);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            border-top: 6px solid #D63384;
+        }
+
+        .id-badge {
+            display: inline-block;
+            background: #4A3B3B;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5em;
+            color: #4A3B3B;
+            margin: 10px 0 25px 0;
+            letter-spacing: -1px;
+        }
+
+        /* Foto da Modelo estilo "Book" */
+        .foto-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 30px;
+            border: 8px solid white;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            border-radius: 5px;
+        }
+
+        .foto-container img {
+            display: block;
+            width: 100%;
+            max-width: 450px;
+            height: auto;
+        }
+
+        /* Grid de Informações */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            text-align: left;
+            margin-top: 20px;
+            padding: 20px;
+            background: #fdf2f7; /* Tom rosado leve */
+            border-radius: 12px;
+            border: 1px solid #f2d5e5;
+        }
+
+        .info-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(183, 110, 121, 0.2);
+            font-size: 0.95em;
+        }
+
+        .info-item strong {
+            color: #B76E79; /* Rose Gold */
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+        }
+
+        .medidas-box {
+            grid-column: span 2;
+            text-align: center;
+            background: #4A3B3B;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .medidas-box strong {
+            color: #D63384;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .eventos-box {
+            grid-column: span 2;
+            padding: 15px;
+            background: white;
+            border: 1px dashed #B76E79;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .voltar {
+            display: inline-block;
+            margin-top: 35px;
+            text-decoration: none;
+            color: #D63384;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .voltar:hover {
+            color: #4A3B3B;
+            transform: translateX(-5px);
+        }
+
+        /* Responsividade */
+        @media (max-width: 500px) {
+            .info-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 1.8em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-logo">
+        <img src="{{ url_for('static', filename='logo-phas.png') }}" alt="Phas Model Logotipo">
+    </div>
+
+    <div class="perfil">
+        <span class="id-badge">Modelo Premium #{{ modelo.id }}</span>
+        <h1>{{ modelo.nome }}</h1>
+        
+        <div class="foto-container">
+            <img src="{{ url_for('static', filename='uploads/' + modelo.foto_url) }}" alt="Foto de {{ modelo.nome }}">
+        </div>
+
+        <div class="info-grid">
+            <div class="info-item"><strong>Idade:</strong> {{ modelo.idade }} anos</div>
+            <div class="info-item"><strong>Altura:</strong> {{ modelo.altura }}m</div>
+            <div class="info-item"><strong>Peso:</strong> {{ modelo.peso }}kg</div>
+            <div class="info-item"><strong>Cabelo:</strong> {{ modelo.cabelo }}</div>
+            <div class="info-item"><strong>Pele:</strong> {{ modelo.pele }}</div>
+            <div class="info-item"><strong>Olhos:</strong> {{ modelo.olhos }}</div>
+            
+            <div class="medidas-box">
+                <strong>Composto de Medidas</strong>
+                {{ modelo.busto }}cm (Busto) • {{ modelo.cintura }}cm (Cintura) • {{ modelo.quadril }}cm (Quadril)
+            </div>
+
+            {% if modelo.evento_participado %}
+            <div class="info-item eventos-box">
+                <strong>Experiência em Eventos:</strong><br>
+                <span style="font-style: italic; color: #555;">{{ modelo.evento_participado }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <a href="/" class="voltar">← Voltar para o Casting</a>
+    </div>
+
+</body>
+</html>
