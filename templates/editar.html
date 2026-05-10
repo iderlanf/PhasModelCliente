@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Modelo: {{ modelo.nome }} - Phas Models</title>
+    
+    <!-- Importação correta da fonte Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com" rel="stylesheet">
+
+    <style>
+        /* Unificando a fonte globalmente */
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: url("{{ url_for('static', filename='fundo-phas.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* Logomarca no Topo */
+        .header-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header-logo img {
+            max-width: 180px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+
+        .container {
+            max-width: 550px;
+            margin: 0 auto 40px auto;
+            background: rgba(255, 255, 255, 0.97);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border-top: 6px solid #D63384;
+        }
+
+        h1 {
+            /* Alterado de Playfair para Poppins Bold */
+            font-weight: 700;
+            color: #4A3B3B;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #B76E79;
+            padding-bottom: 10px;
+        }
+
+        .voltar {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #D63384;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+        .voltar:hover {
+            color: #B76E79;
+            transform: translateX(-5px);
+        }
+
+        form {
+            display: grid;
+            gap: 12px;
+        }
+
+        label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #B76E79;
+            text-transform: uppercase;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        input, textarea {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: 0.3s;
+            outline: none;
+            background: #fff;
+        }
+        input:focus, textarea:focus {
+            border-color: #D63384;
+            box-shadow: 0 0 8px rgba(214, 51, 132, 0.1);
+        }
+
+        /* Avatar de edição */
+        .foto-container {
+            text-align: center;
+            margin-bottom: 20px;
+            background: #fdf2f7;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px dashed #B76E79;
+        }
+        .foto-container img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .btn-salvar {
+            background: linear-gradient(45deg, #4A3B3B, #2c2424);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.4s;
+            margin-top: 20px;
+        }
+        .btn-salvar:hover {
+            background: linear-gradient(45deg, #D63384, #B76E79);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(214, 51, 132, 0.3);
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+        .col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 500px) {
+            .row { flex-direction: column; gap: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-logo">
+    <img src="{{ url_for('static', filename='logo-phas.png') }}" alt="Phas Model Logo">
+</div>
+
+<div class="container">
+    <a href="/" class="voltar">← Cancelar e Voltar</a>
+    <h1>Editar Book Profissional</h1>
+
+    <div class="foto-container">
+        <img src="{{ url_for('static', filename='uploads/' + modelo.foto_url) }}" alt="Foto de {{ modelo.nome }}">
+        <p style="font-size: 11px; color: #4A3B3B; text-transform: uppercase; letter-spacing: 1px; margin: 0;">
+            Perfil Ativo: <strong>{{ modelo.nome }}</strong>
+        </p>
+    </div>
+
+    <form action="/editar/{{ modelo.id }}" method="POST" enctype="multipart/form-data">
+        <label>Substituir Fotografia de Capa:</label>
+        <input type="file" name="foto_arquivo" accept="image/*" style="font-size: 12px; background: none; border: none; padding: 0;">
+
+        <label>Nome Completo:</label>
+        <input type="text" name="nome" value="{{ modelo.nome }}" required>
+
+        <div class="row">
+            <div class="col">
+                <label>Idade:</label>
+                <input type="number" name="idade" value="{{ modelo.idade }}" required>
+            </div>
+            <div class="col">
+                <label>Peso (kg):</label>
+                <input type="number" name="peso" value="{{ modelo.peso }}" required>
+            </div>
+            <div class="col">
+                <label>Altura (m):</label>
+                <input type="number" step="0.01" name="altura" value="{{ modelo.altura }}" required>
+            </div>
+        </div>
+
+        <label>Características Estéticas:</label>
+        <div class="row">
+            <div class="col">
+                <input type="text" name="cabelo" placeholder="Cabelo" value="{{ modelo.cabelo }}" required>
+            </div>
+            <div class="col">
+                <input type="text" name="pele" placeholder="Pele / Etnia" value="{{ modelo.pele }}" required>
+            </div>
+            <div class="col">
+                <input type="text" name="olhos" placeholder="Olhos" value="{{ modelo.olhos }}" required>
+            </div>
+        </div>
+
+        <label>Medidas (cm):</label>
+        <div class="row">
+            <div class="col">
+                <input type="number" step="0.1" name="busto" placeholder="Busto" value="{{ modelo.busto }}" required>
+            </div>
+            <div class="col">
+                <input type="number" step="0.1" name="cintura" placeholder="Cintura" value="{{ modelo.cintura }}" required>
+            </div>
+            <div class="col">
+                <input type="number" step="0.1" name="quadril" placeholder="Quadril" value="{{ modelo.quadril }}" required>
+            </div>
+        </div>
+
+        <label>Portfólio / Eventos Recentes:</label>
+        <textarea name="evento_participado" rows="4">{{ modelo.evento_participado }}</textarea>
+
+        <input type="hidden" name="foto_url" value="{{ modelo.foto_url }}">
+        <button type="submit" class="btn-salvar">Confirmar Atualização</button>
+    </form>
+</div>
+
+</body>
+</html>
